@@ -27,8 +27,6 @@ const SignUp = () => {
     (e) => {
       e.preventDefault();
       if (!mismatchError && nickname) {
-        console.log(email, nickname, password, passwordCheck);
-
         setSignUpError('');
         setSignUpSuccess(false);
 
@@ -38,15 +36,12 @@ const SignUp = () => {
             nickname,
             password,
           })
-          .then((res) => {
-            console.log(res);
+          .then(() => {
             setSignUpSuccess(true);
           })
           .catch((error) => {
             setSignUpError(error.response.data);
-            console.log(error.response);
           });
-        console.log('회원가입');
       }
     },
     [email, nickname, password, passwordCheck, mismatchError],
