@@ -3,8 +3,14 @@ import { Link } from 'react-router-dom';
 import { Header, Form, Label, Input, Error, Button, LinkContainer } from '@pages/SignUp/styles';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
+import useSWR from 'swr';
+import fetcher from '@utils/fetcher';
 
 const LogIn = () => {
+  const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
+    dedupingInterval: 100000,
+  });
+
   const [email, onChangeEmail] = useInput('');
   const [password, , setPassword] = useInput('');
   const [logInError, setLogInError] = useState(false);
@@ -20,15 +26,20 @@ const LogIn = () => {
       setLogInError(false);
 
       axios
-        .post('http://localhost:3095/api/users/login', {
-          email,
-          password,
-        })
+        .post(
+          'http://localhost:3095/api/users/login',
+          {
+            email,
+            password,
+          },
+          { withCredentials: true },
+        )
         .then((res) => {
           console.log(res);
+          mutate();
         })
         .catch((error) => {
-          setLogInError(error.response.data);
+          setLogInError(error.response?.data?.statusCode === 401);
         });
     },
     [email, password],
@@ -49,7 +60,7 @@ const LogIn = () => {
             <Input type="password" id="password" name="password" value={password} onChange={onChangePassword} />
           </div>
         </Label>
-        <Label id="password-check-label">{logInError && <Error>{logInError}</Error>}</Label>
+        {logInError && <Error>정확한 정보를 입력해주세요.</Error>}
         <Button type="submit">로그인</Button>
       </Form>
       <LinkContainer>
