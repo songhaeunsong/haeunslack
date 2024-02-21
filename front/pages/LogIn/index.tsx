@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { Header, Form, Label, Input, Error, Button, LinkContainer } from '@pages/SignUp/styles';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
@@ -34,16 +34,21 @@ const LogIn = () => {
           },
           { withCredentials: true },
         )
-        .then((res) => {
-          console.log(res);
+        .then(() => {
           mutate();
         })
         .catch((error) => {
           setLogInError(error.response?.data?.statusCode === 401);
         });
     },
-    [email, password],
+    [email, password, mutate],
   );
+  if (data === undefined) return <div>로딩 중...</div>;
+
+  if (!error && data) {
+    return <Redirect to="/workspace/channel" />;
+  }
+
   return (
     <div>
       <Header>Slack</Header>
