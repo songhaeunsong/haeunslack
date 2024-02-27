@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import loadable from '@loadable/component';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
@@ -9,37 +9,56 @@ import {
   Channels,
   Chats,
   Header,
+  LogOutButton,
   MenuScroll,
   ProfileImg,
+  ProfileModal,
   RightMenu,
   WorkspaceName,
   WorkspaceWrapper,
   Workspaces,
 } from '@layouts/Workspace/styles';
+import Menu from '@components/Menu';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 const Workspace: FC = ({ children }) => {
-  const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const { data: userData, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const onLogout = useCallback(() => {
     axios.post('http://localhost:3095/api/users/logout', null, { withCredentials: true }).then(() => mutate());
   }, []);
 
-  if (data === undefined) return <div>로딩 중...</div>;
+  const onClickUserProfile = useCallback(() => {
+    setShowUserMenu((prev) => !prev);
+  }, []);
 
-  if (!data) return <Redirect to="/login" />;
+  if (userData === undefined) return <div>로딩 중...</div>;
+
+  if (!userData) return <Redirect to="/login" />;
 
   return (
     <div>
       <Header>
         <RightMenu>
-          <span>
-            <ProfileImg src={gravatar.url(data.email, { s: '28px', d: 'retro' })} />
+          <span onClick={onClickUserProfile}>
+            <ProfileImg src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
+            {showUserMenu && (
+              <Menu style={{ right: 0, top: 38 }} onCloseModal={onClickUserProfile}>
+                <ProfileModal>
+                  <img src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
+                  <div>
+                    <span id="profile-name">{userData.nickname}</span>
+                    <span id="profile-active">Active</span>
+                  </div>
+                </ProfileModal>
+                <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
+              </Menu>
+            )}
           </span>
         </RightMenu>
       </Header>
-      <button onClick={onLogout}>logout</button>
       <WorkspaceWrapper>
         <Workspaces>test</Workspaces>
         <Channels>
