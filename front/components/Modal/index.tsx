@@ -1,7 +1,25 @@
-import React, { CSSProperties, FC } from 'react';
+import React, { CSSProperties, FC, useCallback } from 'react';
+import { CloseModalButton, CreateModal } from './styles';
 
-const Modal: FC = ({ children }) => {
-  return <div>menu</div>;
+interface TProps {
+  show: boolean;
+  onCloseModal: () => void;
+}
+const Modal: FC<TProps> = ({ children, show, onCloseModal }) => {
+  const stopPropagation = useCallback((e) => {
+    e.stopPropagation();
+  }, []);
+
+  if (!show) return null;
+
+  return (
+    <CreateModal onClick={onCloseModal}>
+      <div onClick={stopPropagation}>
+        <CloseModalButton onClick={onCloseModal}></CloseModalButton>
+        {children}
+      </div>
+    </CreateModal>
+  );
 };
 
 export default Modal;
