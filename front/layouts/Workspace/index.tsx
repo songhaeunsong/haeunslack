@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from 'react';
+import React, { FC, VFC, useCallback, useState } from 'react';
 import loadable from '@loadable/component';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
@@ -17,6 +17,7 @@ import {
   ProfileModal,
   RightMenu,
   WorkspaceButton,
+  WorkspaceModal,
   WorkspaceName,
   WorkspaceWrapper,
   Workspaces,
@@ -27,16 +28,19 @@ import { IUser } from '@typings/db';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/styles';
 import useInput from '@hooks/useInput';
+import CreateChannelModal from '@components/CreateChannelModal';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
-const Workspace: FC = ({ children }) => {
+const Workspace: VFC = () => {
   const { data: userData, error, mutate } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
 
   const onLogout = useCallback(() => {
     axios.post('http://localhost:3095/api/users/logout', null, { withCredentials: true }).then(() => mutate());
@@ -50,6 +54,13 @@ const Workspace: FC = ({ children }) => {
     setShowCreateWorkspaceModal(true);
   }, []);
 
+  const toggleWorkspaceModal = useCallback(() => {
+    setShowWorkspaceModal((prev) => !prev);
+  }, []);
+
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChannelModal((prev) => !prev);
+  }, []);
   const onCreateWorkspace = useCallback(
     (e) => {
       e.preventDefault();
@@ -79,7 +90,8 @@ const Workspace: FC = ({ children }) => {
     [newWorkspace, newUrl],
   );
   const onCloseModal = useCallback(() => {
-    setShowCreateWorkspaceModal((prev) => !prev);
+    setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
   }, []);
 
   if (userData === undefined) return <div>로딩 중...</div>;
@@ -93,18 +105,16 @@ const Workspace: FC = ({ children }) => {
           <span onClick={onClickUserProfile}>
             <ProfileImg src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
           </span>
-          {showUserMenu && (
-            <Menu style={{ right: 0, top: 38 }} onCloseModal={onClickUserProfile}>
-              <ProfileModal>
-                <img src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
-                <div>
-                  <span id="profile-name">{userData.nickname}</span>
-                  <span id="profile-active">Active</span>
-                </div>
-              </ProfileModal>
-              <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
-            </Menu>
-          )}
+          <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
+            <ProfileModal>
+              <img src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
+              <div>
+                <span id="profile-name">{userData.nickname}</span>
+                <span id="profile-active">Active</span>
+              </div>
+            </ProfileModal>
+            <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
+          </Menu>
         </RightMenu>
       </Header>
       <WorkspaceWrapper>
@@ -119,8 +129,16 @@ const Workspace: FC = ({ children }) => {
           <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>slack</WorkspaceName>
-          <MenuScroll>MenuScroll</MenuScroll>
+          <WorkspaceName onClick={toggleWorkspaceModal}>slack</WorkspaceName>
+          <MenuScroll>
+            <Menu style={{ top: 95, left: 80 }} show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal}>
+              <WorkspaceModal>
+                <h2>ss</h2>
+                <button onClick={onClickAddChannel}>채널 만들기</button>
+                <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
+              </WorkspaceModal>
+            </Menu>
+          </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
@@ -142,7 +160,7 @@ const Workspace: FC = ({ children }) => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
-      {children}
+      <CreateChannelModal show={showCreateChannelModal} onCloseModal={onCloseModal}></CreateChannelModal>
     </div>
   );
 };

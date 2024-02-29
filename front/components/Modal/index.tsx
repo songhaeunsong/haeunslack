@@ -15,7 +15,7 @@ const Modal: FC<TProps> = ({ children, show, onCloseModal }) => {
   return (
     <CreateModal onClick={onCloseModal}>
       <div onClick={stopPropagation}>
-        <CloseModalButton onClick={onCloseModal}></CloseModalButton>
+        <CloseModalButton onClick={onCloseModal}>&times;</CloseModalButton>
         {children}
       </div>
     </CreateModal>
