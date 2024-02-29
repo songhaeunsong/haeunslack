@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 
 const LogIn = () => {
-  const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const { data, error, mutate } = useSWR(`http://localhost:3095/api/users`, fetcher);
   const [email, onChangeEmail] = useInput('');
   const [password, , setPassword] = useInput('');
   const [logInError, setLogInError] = useState(false);
@@ -22,7 +22,7 @@ const LogIn = () => {
       setLogInError(false);
       axios
         .post(
-          'http://localhost:3095/api/users/login',
+          `http://localhost:3095/api/users/login`,
           {
             email,
             password,
@@ -42,7 +42,7 @@ const LogIn = () => {
   if (data === undefined) return <div>로딩 중...</div>;
 
   if (!error && data) {
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/workspace/gk/channel/일반" />;
   }
 
   return (

@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 
 const SignUp = () => {
-  const { data, error, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const { data, error, mutate } = useSWR(`http://localhost:3095/api/users`, fetcher);
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
   const [password, , setPassword] = useInput('');
@@ -34,7 +34,7 @@ const SignUp = () => {
         setSignUpSuccess(false);
 
         axios
-          .post('http://localhost:3095/api/users', {
+          .post(`http://localhost:3095/api/users`, {
             email,
             nickname,
             password,
@@ -51,7 +51,7 @@ const SignUp = () => {
   );
 
   if (data === undefined) return <div>로딩 중...</div>;
-  if (data) return <Redirect to="/workspace/channel" />;
+  if (data) return <Redirect to="/workspace/gk/channel/일반" />;
   return (
     <div>
       <Header>Slack</Header>

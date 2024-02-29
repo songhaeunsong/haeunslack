@@ -5,7 +5,7 @@ import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import gravatar from 'gravatar';
 import { toast } from 'react-toastify';
-import { Redirect, Route, Switch } from 'react-router';
+import { Redirect, Route, Switch, useParams } from 'react-router';
 import {
   AddButton,
   Channels,
@@ -24,7 +24,7 @@ import {
 } from '@layouts/Workspace/styles';
 import Menu from '@components/Menu';
 import { Link } from 'react-router-dom';
-import { IUser } from '@typings/db';
+import { IChannel, IUser } from '@typings/db';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/styles';
 import useInput from '@hooks/useInput';
@@ -34,7 +34,19 @@ const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 const Workspace: VFC = () => {
-  const { data: userData, error, mutate } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
+  const { workspace } = useParams<{ workspace: string }>();
+
+  const {
+    data: userData,
+    error,
+    mutate,
+  } = useSWR<IUser | false>(`http://localhost:3095/api/users`, fetcher, {
+    dedupingInterval: 2000,
+  });
+  const { data: channelData } = useSWR<IChannel[]>(
+    `http://localhost:3095/api/workspaces/${workspace}/channels`,
+    fetcher,
+  );
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
@@ -43,7 +55,7 @@ const Workspace: VFC = () => {
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
 
   const onLogout = useCallback(() => {
-    axios.post('http://localhost:3095/api/users/logout', null, { withCredentials: true }).then(() => mutate());
+    axios.post(`http://localhost:3095/api/users/logout`, null, { withCredentials: true }).then(() => mutate());
   }, []);
 
   const onClickUserProfile = useCallback(() => {
@@ -69,7 +81,7 @@ const Workspace: VFC = () => {
 
       axios
         .post(
-          'http://localhost:3095/api/workspaces',
+          `http://localhost:3095/api/workspaces`,
           {
             workspace: newWorkspace,
             url: newUrl,
@@ -138,12 +150,13 @@ const Workspace: VFC = () => {
                 <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
               </WorkspaceModal>
             </Menu>
+            {channelData?.map((v) => <div>{v.name}</div>)}
           </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
-            <Route path="/workspace/channel" component={Channel} />
-            <Route path="/workspace/dm" component={DirectMessage} />
+            <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
+            <Route path="/workspace/:workspace/dm/:id" component={DirectMessage} />
           </Switch>
         </Chats>
       </WorkspaceWrapper>
@@ -160,7 +173,11 @@ const Workspace: VFC = () => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
-      <CreateChannelModal show={showCreateChannelModal} onCloseModal={onCloseModal}></CreateChannelModal>
+      <CreateChannelModal
+        show={showCreateChannelModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+        onCloseModal={onCloseModal}
+      ></CreateChannelModal>
     </div>
   );
 };
