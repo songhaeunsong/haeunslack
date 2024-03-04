@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { CollapseButton } from '@components/DMList/styles';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
@@ -18,6 +18,10 @@ const DMList: FC = () => {
   const [onlineList, setOnlineList] = useState<number[]>([]);
   const toggleChannelCollapse = useCallback(() => setChannelCollapse((prev) => !prev), []);
 
+  useEffect(() => {
+    console.log('DMList: workspace 바꼈다', workspace);
+    setOnlineList([]);
+  }, [workspace]);
   return (
     <>
       <h2>
