@@ -32,6 +32,7 @@ import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
@@ -114,6 +115,7 @@ const Workspace: VFC = () => {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
     setShowInviteWorkspaceModal(false);
+    setShowInviteChannelModal(false);
   }, []);
 
   if (userData === undefined) return <div>로딩 중...</div>;
@@ -161,7 +163,7 @@ const Workspace: VFC = () => {
                 <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
               </WorkspaceModal>
             </Menu>
-            {channelData?.map((v) => <div>{v.name}</div>)}
+            <ChannelList />
             <DMList />
           </MenuScroll>
         </Channels>
