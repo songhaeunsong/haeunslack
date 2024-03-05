@@ -27,14 +27,17 @@ const ChatBox: VFC<TProps> = ({ chat, onChangeChat, onSubmitForm }) => {
     dedupingInterval: 2000,
   });
 
-  const onKeyDownChat = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      console.log('제출');
-      onSubmitForm(e);
-    }
-    return;
-  }, []);
+  const onKeyDownChat = useCallback(
+    (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        console.log('제출');
+        onSubmitForm(e);
+      }
+      return;
+    },
+    [onSubmitForm],
+  );
 
   return (
     <ChatArea>

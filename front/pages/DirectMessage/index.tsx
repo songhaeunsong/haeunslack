@@ -3,7 +3,7 @@ import gravatar from 'gravatar';
 import useSWR from 'swr';
 import { Container, Header } from './styles';
 import fetcher from '@utils/fetcher';
-import { IUser } from '@typings/db';
+import { IDM, IUser } from '@typings/db';
 import { useParams } from 'react-router';
 import ChatBox from '@components/ChatBox';
 import useInput from '@hooks/useInput';
@@ -16,13 +16,30 @@ const DirectMessage = () => {
   const { data: userData } = useSWR(`http://localhost:3095/api/workspaces/${workspace}/users/${id}`, fetcher, {
     dedupingInterval: 2000,
   });
+  const { mutate: mutateChat } = useSWR<IDM[]>(
+    `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=1`,
+    fetcher,
+    {
+      dedupingInterval: 2000,
+    },
+  );
   const [chat, onChangeChat, setChat] = useInput('');
-  const onSubmitForm = useCallback((e) => {
-    e.preventDefault();
-    console.log('DM submit');
-    // post 작업
-    setChat('');
-  }, []);
+  const onSubmitForm = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (chat?.trim()) {
+        axios
+          .post(`http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats`, { content: chat })
+          .then((res) => {
+            mutateChat(res.data, false);
+            setChat('');
+            console.log('DM submit');
+          })
+          .catch((err) => console.dir(err));
+      }
+    },
+    [chat, workspace, id],
+  );
 
   if (!myData || !userData) return null;
 
