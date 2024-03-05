@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import gravatar from 'gravatar';
 import useSWR from 'swr';
 import { Container, Header } from './styles';
@@ -6,6 +6,9 @@ import fetcher from '@utils/fetcher';
 import { IUser } from '@typings/db';
 import { useParams } from 'react-router';
 import ChatBox from '@components/ChatBox';
+import useInput from '@hooks/useInput';
+import axios from 'axios';
+import ChatList from '@components/ChatList';
 
 const DirectMessage = () => {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
@@ -13,6 +16,13 @@ const DirectMessage = () => {
   const { data: userData } = useSWR(`http://localhost:3095/api/workspaces/${workspace}/users/${id}`, fetcher, {
     dedupingInterval: 2000,
   });
+  const [chat, onChangeChat, setChat] = useInput('');
+  const onSubmitForm = useCallback((e) => {
+    e.preventDefault();
+    console.log('DM submit');
+    // post 작업
+    setChat('');
+  }, []);
 
   if (!myData || !userData) return null;
 
@@ -21,8 +31,8 @@ const DirectMessage = () => {
       <Header>
         <img src={gravatar.url(userData.email, { s: '24px', d: 'retro' })} alt={userData.nickname} />
         <span>{userData.nickname}</span>
-        {/*<ChatList/>*/}
-        <ChatBox chat="" />
+        <ChatList />
+        <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
       </Header>
     </Container>
   );

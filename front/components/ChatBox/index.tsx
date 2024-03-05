@@ -4,27 +4,48 @@ import React, { useCallback, useEffect, useRef, VFC } from 'react';
 import { useParams } from 'react-router';
 import useSWR from 'swr';
 import gravatar from 'gravatar';
+import autosize from 'autosize';
 import { ChatArea, Form, MentionsTextarea, SendButton, Toolbox } from './styles';
 
 interface TProps {
   chat: string;
+  onChangeChat: (e: any) => void;
+  onSubmitForm: (e: any) => void;
 }
-const ChatBox: VFC<TProps> = ({ chat }) => {
+const ChatBox: VFC<TProps> = ({ chat, onChangeChat, onSubmitForm }) => {
   const { workspace } = useParams<{ workspace: string }>();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (textareaRef.current) autosize(textareaRef.current);
+  }, []);
+
   const {
     data: userData,
     error,
     mutate,
-  } = useSWR<IUser | false>('/api/users', fetcher, {
+  } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher, {
     dedupingInterval: 2000,
   });
 
-  const onSubmitForm = useCallback(() => {}, []);
+  const onKeyDownChat = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      console.log('제출');
+      onSubmitForm(e);
+    }
+    return;
+  }, []);
 
   return (
     <ChatArea>
       <Form onSubmit={onSubmitForm}>
-        <MentionsTextarea id="editor-chat" />
+        <MentionsTextarea
+          id="editor-chat"
+          value={chat}
+          onChange={onChangeChat}
+          onKeyDown={onKeyDownChat}
+          ref={textareaRef}
+        />
         <Toolbox>
           <SendButton
             className={
