@@ -14,7 +14,11 @@ const Channel = () => {
       e.preventDefault();
       if (chat?.trim()) {
         axios
-          .post(`http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/chats`, { content: chat })
+          .post(
+            `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/chats`,
+            { content: chat },
+            { withCredentials: true },
+          )
           .then(() => {
             setChat('');
             console.log('channel submit');
@@ -27,7 +31,7 @@ const Channel = () => {
   return (
     <Container>
       <Header>채널</Header>
-      <ChatList />
+      {/*<ChatList />*/}
       <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
     </Container>
   );

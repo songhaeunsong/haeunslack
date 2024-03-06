@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import gravatar from 'gravatar';
 import useSWR from 'swr';
 import { Container, Header } from './styles';
@@ -9,48 +9,57 @@ import ChatBox from '@components/ChatBox';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
 import ChatList from '@components/ChatList';
+import useSocket from '@hooks/useSocket';
 
 const DirectMessage = () => {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
+  const [chat, onChangeChat, setChat] = useInput('');
+  const [socket] = useSocket(workspace);
+
   const { data: myData } = useSWR(`http://localhost:3095/api/users`, fetcher);
   const { data: userData } = useSWR(`http://localhost:3095/api/workspaces/${workspace}/users/${id}`, fetcher, {
     dedupingInterval: 2000,
   });
-  const { mutate: mutateChat } = useSWR<IDM[]>(
+  const { data: chatData, mutate: mutateChat } = useSWR<IDM[]>(
     `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=1`,
     fetcher,
     {
       dedupingInterval: 2000,
     },
   );
-  const [chat, onChangeChat, setChat] = useInput('');
+
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
-      if (chat?.trim()) {
+      if (chat?.trim() && chatData) {
         axios
-          .post(`http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats`, { content: chat })
-          .then((res) => {
-            mutateChat(res.data, false);
+          .post(
+            `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats`,
+            { content: chat },
+            { withCredentials: true },
+          )
+          .then(() => {
+            mutateChat();
             setChat('');
-            console.log('DM submit');
           })
           .catch((err) => console.dir(err));
       }
     },
-    [chat, workspace, id],
+    [chat, chatData, myData, userData, workspace, id],
   );
 
-  if (!myData || !userData) return null;
+  if (!myData || !userData || !chatData) {
+    return null;
+  }
 
   return (
     <Container>
       <Header>
         <img src={gravatar.url(userData.email, { s: '24px', d: 'retro' })} alt={userData.nickname} />
         <span>{userData.nickname}</span>
-        <ChatList />
-        <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
       </Header>
+      <ChatList chatData={chatData} />
+      <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
     </Container>
   );
   return <div>dm page</div>;

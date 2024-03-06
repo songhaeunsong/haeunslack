@@ -31,7 +31,6 @@ const ChatBox: VFC<TProps> = ({ chat, onChangeChat, onSubmitForm }) => {
     (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        console.log('제출');
         onSubmitForm(e);
       }
       return;
