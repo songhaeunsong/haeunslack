@@ -20,8 +20,8 @@ const InviteChannelModal: VFC<TProps> = ({ show, setShowInviteChannelModal, onCl
 
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
   const { data: userData } = useSWR<IUser | false>(`http://localhost:3095/api/users`, fetcher);
-  const { mutate: mutateChannel } = useSWR<IChannel[]>(
-    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
+  const { mutate: mutateMember } = useSWR<IChannel[]>(
+    userData && channel ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
     fetcher,
   );
   const onInviteMember = useCallback(
@@ -36,7 +36,7 @@ const InviteChannelModal: VFC<TProps> = ({ show, setShowInviteChannelModal, onCl
           { withCredentials: true },
         )
         .then((res) => {
-          mutateChannel(res.data, false);
+          mutateMember(res.data, false);
           setShowInviteChannelModal(false);
           setNewMember('');
         })

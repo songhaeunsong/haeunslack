@@ -1,4 +1,4 @@
-import React, { FC, VFC, useCallback, useState } from 'react';
+import React, { FC, VFC, useCallback, useEffect, useState } from 'react';
 import loadable from '@loadable/component';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
@@ -31,24 +31,15 @@ import useInput from '@hooks/useInput';
 import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
+import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
+import useSocket from '@hooks/useSocket';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 const Workspace: VFC = () => {
   const { workspace } = useParams<{ workspace: string }>();
-
-  const {
-    data: userData,
-    error,
-    mutate,
-  } = useSWR<IUser | false>(`http://localhost:3095/api/users`, fetcher, {
-    dedupingInterval: 2000,
-  });
-  const { data: channelData } = useSWR<IChannel[]>(
-    `http://localhost:3095/api/workspaces/${workspace}/channels`,
-    fetcher,
-  );
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
@@ -57,6 +48,28 @@ const Workspace: VFC = () => {
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
+
+  const { data: userData, mutate } = useSWR<IUser | false>(`http://localhost:3095/api/users`, fetcher, {
+    dedupingInterval: 2000,
+  });
+  const { data: channelData } = useSWR<IChannel[]>(
+    `http://localhost:3095/api/workspaces/${workspace}/channels`,
+    fetcher,
+  );
+  const [socket, disconnect] = useSocket(workspace);
+
+  useEffect(() => {
+    if (channelData && userData && socket) {
+      socket.emit('login', {
+        id: userData.id,
+        channels: channelData.map((v) => v.id),
+      });
+    }
+  }, [channelData, userData, socket]);
+
+  useEffect(() => {
+    return () => disconnect();
+  }, [workspace, disconnect]);
 
   const onLogout = useCallback(() => {
     axios.post(`http://localhost:3095/api/users/logout`, null, { withCredentials: true }).then(() => mutate());
@@ -96,8 +109,8 @@ const Workspace: VFC = () => {
           },
           { withCredentials: true },
         )
-        .then(() => {
-          mutate();
+        .then((res) => {
+          mutate(res.data, false);
           setShowCreateWorkspaceModal(false);
           setNewWorkspace('');
           setNewUrl('');
@@ -113,6 +126,7 @@ const Workspace: VFC = () => {
     setShowCreateWorkspaceModal(false);
     setShowCreateChannelModal(false);
     setShowInviteWorkspaceModal(false);
+    setShowInviteChannelModal(false);
   }, []);
 
   if (userData === undefined) return <div>로딩 중...</div>;
@@ -142,7 +156,7 @@ const Workspace: VFC = () => {
         <Workspaces>
           {userData?.Workspaces.map((ws) => {
             return (
-              <Link key={ws.id} to={`/workspace/${123}/channel/일반`}>
+              <Link key={ws.id} to={`/workspace/${ws.name}/channel/일반`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
               </Link>
             );
@@ -160,7 +174,8 @@ const Workspace: VFC = () => {
                 <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
               </WorkspaceModal>
             </Menu>
-            {channelData?.map((v) => <div>{v.name}</div>)}
+            <ChannelList />
+            <DMList />
           </MenuScroll>
         </Channels>
         <Chats>
