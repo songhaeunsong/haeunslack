@@ -3,13 +3,15 @@ import React, { FC, useCallback, useRef } from 'react';
 import { ChatZone } from './styles';
 import Chat from '@components/Chat';
 import { Scrollbars } from 'react-custom-scrollbars';
-import dayjs from 'dayjs';
+
 interface TProps {
   chatData: IDM[];
 }
 const ChatList: FC<TProps> = ({ chatData }) => {
   const scrollRef = useRef(null);
-  const onScroll = useCallback(() => {}, []);
+  const onScroll = useCallback(() => {
+    // 위로 올리면 이전 글들도 불러와지는 작업
+  }, []);
   return (
     <ChatZone>
       <Scrollbars autoHide ref={scrollRef} onScrollFrame={onScroll}>
