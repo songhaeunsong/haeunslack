@@ -12,12 +12,14 @@ import axios from 'axios';
 import ChatList from '@components/ChatList';
 import { separateSection } from '@utils/separateSection';
 import Scrollbars from 'react-custom-scrollbars';
+import useSocket from '@hooks/useSocket';
 
 const PERPAGE = 20; // chatData 몇개씩 불러올지 지정
 
 const DirectMessage = () => {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
   const [chat, onChangeChat, setChat] = useInput('');
+  const [socket] = useSocket(workspace);
 
   const { data: myData } = useSWR(`http://localhost:3095/api/users`, fetcher);
   const { data: userData } = useSWR(`http://localhost:3095/api/workspaces/${workspace}/users/${id}`, fetcher, {
@@ -31,8 +33,34 @@ const DirectMessage = () => {
     (index) => `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats?perPage=${PERPAGE}&page=${index + 1}`,
     fetcher,
   );
-
   const scrollRef = useRef<Scrollbars>(null);
+
+  const onMessage = useCallback((data: IDM) => {
+    if (data.SenderId === Number(id) && myData.id !== Number(id)) {
+      mutateChat((chatData) => {
+        chatData?.[0].unshift(data);
+        return chatData;
+      }, false).then(() => {
+        if (scrollRef.current) {
+          if (
+            scrollRef.current.getScrollHeight() <
+            scrollRef.current.getClientHeight() + scrollRef.current.getScrollTop() + 150
+          ) {
+            setTimeout(() => {
+              scrollRef.current?.scrollToBottom();
+            }, 50);
+          }
+        }
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    socket?.on('dm', onMessage);
+    return () => {
+      socket?.off('dm', onMessage);
+    };
+  }, [socket, onMessage]);
 
   let isEmpty = chatData?.[0]?.length === 0;
   let isReachingEnd = isEmpty || (chatData && chatData[chatData.length - 1]?.length < PERPAGE) || false;
