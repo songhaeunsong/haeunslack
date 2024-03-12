@@ -69,7 +69,7 @@ const ChatBox: VFC<TProps> = ({ chat, onChangeChat, onSubmitForm }) => {
           id="editor-chat"
           value={chat}
           onChange={onChangeChat}
-          onKeyDown={onKeyDownChat}
+          onKeyPress={onKeyDownChat}
           inputRef={textareaRef}
           forceSuggestionsAboveCursor
         >

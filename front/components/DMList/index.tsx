@@ -21,7 +21,6 @@ const DMList: FC = () => {
   const toggleChannelCollapse = useCallback(() => setChannelCollapse((prev) => !prev), []);
 
   useEffect(() => {
-    console.log('New workspace', workspace);
     setOnlineList([]);
   }, [workspace]);
 

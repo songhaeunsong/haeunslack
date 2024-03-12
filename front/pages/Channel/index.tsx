@@ -21,7 +21,6 @@ const Channel = () => {
           )
           .then(() => {
             setChat('');
-            console.log('channel submit');
           })
           .catch((err) => console.dir(err));
       }
