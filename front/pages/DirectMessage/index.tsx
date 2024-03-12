@@ -30,9 +30,6 @@ const DirectMessage = () => {
   } = useSWRInfinite<IDM[]>(
     (index) => `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats?perPage=${PERPAGE}&page=${index + 1}`,
     fetcher,
-    {
-      dedupingInterval: 2000,
-    },
   );
 
   const scrollRef = useRef<Scrollbars>(null);
@@ -40,21 +37,43 @@ const DirectMessage = () => {
   let isEmpty = chatData?.[0]?.length === 0;
   let isReachingEnd = isEmpty || (chatData && chatData[chatData.length - 1]?.length < PERPAGE) || false;
 
+  useEffect(() => {
+    if (chatData?.length === 1) {
+      scrollRef.current?.scrollToBottom();
+    }
+  }, [chatData]);
+
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
       if (chat?.trim() && chatData) {
+        const savedChat = chat;
+        mutateChat((prevChatData) => {
+          prevChatData?.[0].unshift({
+            id: (chatData[0][0].id || 0) + 1,
+            SenderId: myData.id,
+            Sender: myData,
+            ReceiverId: userData.id,
+            Receiver: userData,
+            content: savedChat,
+            createdAt: new Date(),
+          });
+          return prevChatData;
+        }).then(() => {
+          setChat('');
+          scrollRef.current?.scrollToBottom();
+        });
+
         axios
           .post(
             `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats`,
             { content: chat },
             { withCredentials: true },
           )
-          .then(() => {
+          .catch((err) => {
             mutateChat();
-            setChat('');
-          })
-          .catch((err) => console.dir(err));
+            console.dir(err);
+          });
       }
     },
     [chat, chatData, myData, userData, workspace, id],
