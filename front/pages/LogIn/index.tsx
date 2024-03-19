@@ -42,7 +42,7 @@ const LogIn = () => {
   if (data === undefined) return <div>로딩 중...</div>;
 
   if (!error && data) {
-    return <Redirect to="/workspace/gk/channel/일반" />;
+    return <Redirect to="/workspace/sleact/channel/일반" />;
   }
 
   return (

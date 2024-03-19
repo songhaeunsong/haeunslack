@@ -19,6 +19,7 @@ const PERPAGE = 20; // chatData 몇개씩 불러올지 지정
 const DirectMessage = () => {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
   const [chat, onChangeChat, setChat] = useInput('');
+
   const [socket] = useSocket(workspace);
 
   const { data: myData } = useSWR(`http://localhost:3095/api/users`, fetcher);

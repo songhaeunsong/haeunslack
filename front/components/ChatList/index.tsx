@@ -1,12 +1,12 @@
-import { IDM } from '@typings/db';
+import { IChat, IDM } from '@typings/db';
 import React, { FC, MutableRefObject, forwardRef, useCallback, useRef } from 'react';
 import { ChatZone, Section, StickyHeader } from './styles';
 import Chat from '@components/Chat';
 import { Scrollbars } from 'react-custom-scrollbars';
 
 interface TProps {
-  chatSections: { [key: string]: IDM[] };
-  setSize: (f: (size: number) => number) => Promise<IDM[][] | undefined>;
+  chatSections: { [key: string]: (IDM | IChat)[] };
+  setSize: (f: (size: number) => number) => Promise<(IDM | IChat)[][] | undefined>;
   isReachingEnd: boolean;
 }
 const ChatList = forwardRef<Scrollbars, TProps>(({ chatSections, setSize, isReachingEnd }, scrollRef) => {

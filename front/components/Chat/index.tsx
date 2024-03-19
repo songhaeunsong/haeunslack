@@ -1,17 +1,17 @@
 import React, { VFC, memo, useMemo } from 'react';
 import { ChatWrapper } from './styles';
 import gravatar from 'gravatar';
-import { IDM } from '@typings/db';
+import { IChat, IDM } from '@typings/db';
 import dayjs from 'dayjs';
 import regexifyString from 'regexify-string';
 import { Link, useParams } from 'react-router-dom';
 
 interface TProps {
-  data: IDM;
+  data: IDM | IChat;
 }
 const Chat: VFC<TProps> = ({ data }) => {
   const { workspace } = useParams<{ workspace: string }>();
-  const user = data.Sender;
+  const user = 'Sender' in data ? data.Sender : data.User;
 
   const result = useMemo(
     () =>
