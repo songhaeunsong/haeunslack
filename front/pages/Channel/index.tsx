@@ -47,7 +47,7 @@ const Channel = () => {
 
   const onMessage = useCallback(
     (data: IChat) => {
-      if (data.Channel.name === channel && data.UserId !== myData.id) {
+      if (data.Channel.name === channel && data.UserId !== myData?.id) {
         mutateChat((chatData) => {
           chatData?.[0].unshift(data);
           return chatData;
@@ -65,7 +65,7 @@ const Channel = () => {
         });
       }
     },
-    [channel, myData],
+    [channel, myData, mutateChat],
   );
 
   const onClickInviteChannel = useCallback(() => {
@@ -78,7 +78,7 @@ const Channel = () => {
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
-      if (chat?.trim() && chatData && channelData) {
+      if (chat?.trim() && chatData && channelData && myData) {
         const savedChat = chat;
         mutateChat((prevChatData) => {
           prevChatData?.[0].unshift({
@@ -99,13 +99,13 @@ const Channel = () => {
         axios
           .post(
             `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/chats`,
-            { content: chat },
+            { content: savedChat },
             { withCredentials: true },
           )
-          .then(() => {
-            setChat('');
-          })
-          .catch((err) => console.dir(err));
+          .catch((err) => {
+            console.dir(err);
+            mutateChat();
+          });
       }
     },
     [chat, workspace, channel, myData, chatData, channelData],
