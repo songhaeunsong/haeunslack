@@ -1,4 +1,4 @@
-import React, { CSSProperties, VFC, useCallback, useState } from 'react';
+import React, { VFC, useCallback } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'react-toastify';
 import Modal from '@components/Modal';
@@ -18,10 +18,10 @@ interface TProps {
 const InviteWorkspaceModal: VFC<TProps> = ({ show, setShowInviteWorkspaceModal, onCloseModal }) => {
   const [newMember, onChangeNewMember, setNewMember] = useInput('');
 
-  const { workspace } = useParams<{ workspace: string; channel: string }>();
+  const { workspace } = useParams<{ workspace: string }>();
   const { data: userData } = useSWR<IUser | false>(`http://localhost:3095/api/users`, fetcher);
-  const { mutate: mutateChannel } = useSWR<IChannel[]>(
-    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
+  const { mutate: mutateMember } = useSWR<IChannel[]>(
+    userData ? `http://localhost:3095/api/workspaces/${workspace}/members` : null,
     fetcher,
   );
   const onInviteMember = useCallback(
@@ -35,8 +35,8 @@ const InviteWorkspaceModal: VFC<TProps> = ({ show, setShowInviteWorkspaceModal, 
           { email: newMember },
           { withCredentials: true },
         )
-        .then((res) => {
-          mutateChannel(res.data, false);
+        .then(() => {
+          mutateMember();
           setShowInviteWorkspaceModal(false);
           setNewMember('');
         })

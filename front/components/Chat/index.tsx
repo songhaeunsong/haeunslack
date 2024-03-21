@@ -27,11 +27,12 @@ const Chat: VFC<TProps> = ({ data }) => {
               </Link>
             );
           }
-          return <br key={index} />;
+          return <br />;
         },
       }),
     [data.content],
   );
+
   return (
     <ChatWrapper>
       <div className="chat-img">

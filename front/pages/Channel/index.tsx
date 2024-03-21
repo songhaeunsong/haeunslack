@@ -24,15 +24,13 @@ const Channel = () => {
   const [socket] = useSocket(workspace);
 
   const { data: myData } = useSWR(`http://localhost:3095/api/users`, fetcher);
-  const { data: channelMembersData } = useSWR(
-    myData ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
-    fetcher,
-    {
-      dedupingInterval: 2000,
-    },
-  );
+
   const { data: channelData } = useSWR<IChannel>(
     `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}`,
+    fetcher,
+  );
+  const { data: channelMembersData } = useSWR(
+    myData ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
     fetcher,
   );
 
@@ -49,7 +47,7 @@ const Channel = () => {
 
   const onMessage = useCallback(
     (data: IChat) => {
-      if (data.Channel.name === channel && data.UserId !== myData.id) {
+      if (data.Channel.name === channel && data.UserId !== myData?.id) {
         mutateChat((chatData) => {
           chatData?.[0].unshift(data);
           return chatData;
@@ -67,7 +65,50 @@ const Channel = () => {
         });
       }
     },
-    [channel, myData],
+    [channel, myData, mutateChat],
+  );
+
+  const onClickInviteChannel = useCallback(() => {
+    setShowInviteChannelModal(true);
+  }, []);
+
+  const onCloseModal = useCallback(() => {
+    setShowInviteChannelModal((prev) => !prev);
+  }, []);
+  const onSubmitForm = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (chat?.trim() && chatData && channelData && myData) {
+        const savedChat = chat;
+        mutateChat((prevChatData) => {
+          prevChatData?.[0].unshift({
+            id: (chatData[0][0]?.id || 0) + 1,
+            UserId: myData.id,
+            User: myData,
+            content: savedChat,
+            createdAt: new Date(),
+            ChannelId: channelData.id,
+            Channel: channelData,
+          });
+          return prevChatData;
+        }).then(() => {
+          setChat('');
+          scrollRef.current?.scrollToBottom();
+        });
+
+        axios
+          .post(
+            `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/chats`,
+            { content: savedChat },
+            { withCredentials: true },
+          )
+          .catch((err) => {
+            console.dir(err);
+            mutateChat();
+          });
+      }
+    },
+    [chat, workspace, channel, myData, chatData, channelData],
   );
 
   useEffect(() => {
@@ -86,48 +127,9 @@ const Channel = () => {
     }
   }, [chatData]);
 
-  const onClickInviteChannel = useCallback(() => {
-    setShowInviteChannelModal(true);
-  }, []);
-
-  const onCloseModal = useCallback(() => {
-    setShowInviteChannelModal((prev) => !prev);
-  }, []);
-  const onSubmitForm = useCallback(
-    (e) => {
-      e.preventDefault();
-      if (chat?.trim() && chatData && channelData) {
-        const savedChat = chat;
-        mutateChat((prevChatData) => {
-          prevChatData?.[0].unshift({
-            id: (chatData[0][0].id || 0) + 1,
-            UserId: myData.id,
-            User: myData,
-            content: savedChat,
-            createdAt: new Date(),
-            ChannelId: channelData.id,
-            Channel: channelData,
-          });
-          return prevChatData;
-        }).then(() => {
-          setChat('');
-          scrollRef.current?.scrollToBottom();
-        });
-
-        axios
-          .post(
-            `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/chats`,
-            { content: chat },
-            { withCredentials: true },
-          )
-          .then(() => {
-            setChat('');
-          })
-          .catch((err) => console.dir(err));
-      }
-    },
-    [chat, workspace, channel],
-  );
+  useEffect(() => {
+    setSize(1);
+  }, [workspace, channel]);
 
   if (!myData || !chatData) {
     return null;

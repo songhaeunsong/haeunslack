@@ -1,6 +1,5 @@
-import React, { CSSProperties, VFC, useCallback } from 'react';
+import React, { VFC, useCallback } from 'react';
 import { useParams } from 'react-router';
-//import {} from './styles';
 import { toast } from 'react-toastify';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/SignUp/styles';

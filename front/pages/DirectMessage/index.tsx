@@ -33,6 +33,15 @@ const DirectMessage = () => {
   } = useSWRInfinite<IDM[]>(
     (index) => `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats?perPage=${PERPAGE}&page=${index + 1}`,
     fetcher,
+    {
+      onSuccess(data) {
+        if (data?.length === 1) {
+          setTimeout(() => {
+            scrollRef.current?.scrollToBottom();
+          }, 100);
+        }
+      },
+    },
   );
   const scrollRef = useRef<Scrollbars>(null);
 
@@ -61,7 +70,7 @@ const DirectMessage = () => {
     return () => {
       socket?.off('dm', onMessage);
     };
-  }, [socket, onMessage]);
+  }, [socket, onMessage, mutateChat]);
 
   let isEmpty = chatData?.[0]?.length === 0;
   let isReachingEnd = isEmpty || (chatData && chatData[chatData.length - 1]?.length < PERPAGE) || false;
@@ -71,6 +80,10 @@ const DirectMessage = () => {
       scrollRef.current?.scrollToBottom();
     }
   }, [chatData]);
+
+  useEffect(() => {
+    setSize(1);
+  }, [workspace, id]);
 
   const onSubmitForm = useCallback(
     (e) => {
@@ -124,7 +137,6 @@ const DirectMessage = () => {
       <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
     </Container>
   );
-  return <div>dm page</div>;
 };
 
 export default DirectMessage;

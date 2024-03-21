@@ -1,4 +1,4 @@
-import React, { FC, VFC, useCallback, useEffect, useState } from 'react';
+import React, { VFC, useCallback, useEffect, useState } from 'react';
 import loadable from '@loadable/component';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
@@ -110,7 +110,7 @@ const Workspace: VFC = () => {
           { withCredentials: true },
         )
         .then((res) => {
-          mutate(res.data, false);
+          mutate(res.data);
           setShowCreateWorkspaceModal(false);
           setNewWorkspace('');
           setNewUrl('');
@@ -142,7 +142,7 @@ const Workspace: VFC = () => {
           </span>
           <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
             <ProfileModal>
-              <img src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
+              <img src={gravatar.url(userData.email, { s: '36px', d: 'retro' })} alt={userData.nickname} />
               <div>
                 <span id="profile-name">{userData.nickname}</span>
                 <span id="profile-active">Active</span>
@@ -154,7 +154,7 @@ const Workspace: VFC = () => {
       </Header>
       <WorkspaceWrapper>
         <Workspaces>
-          {userData?.Workspaces.map((ws) => {
+          {userData?.Workspaces?.map((ws) => {
             return (
               <Link key={ws.id} to={`/workspace/${ws.name}/channel/일반`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
@@ -168,7 +168,7 @@ const Workspace: VFC = () => {
           <MenuScroll>
             <Menu style={{ top: 95, left: 80 }} show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal}>
               <WorkspaceModal>
-                <h2>ss</h2>
+                <h2>{userData.nickname}</h2>
                 <button onClick={onClickInviteWorkspace}>워크스페이스 사용자 초대</button>
                 <button onClick={onClickAddChannel}>채널 만들기</button>
                 <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>
