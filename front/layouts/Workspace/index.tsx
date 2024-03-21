@@ -168,7 +168,7 @@ const Workspace: VFC = () => {
           <MenuScroll>
             <Menu style={{ top: 95, left: 80 }} show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal}>
               <WorkspaceModal>
-                <h2>ss</h2>
+                <h2>{userData.nickname}</h2>
                 <button onClick={onClickInviteWorkspace}>워크스페이스 사용자 초대</button>
                 <button onClick={onClickAddChannel}>채널 만들기</button>
                 <LogOutButton onClick={onLogout}>로그아웃</LogOutButton>

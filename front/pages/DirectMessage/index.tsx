@@ -33,6 +33,15 @@ const DirectMessage = () => {
   } = useSWRInfinite<IDM[]>(
     (index) => `http://localhost:3095/api/workspaces/${workspace}/dms/${id}/chats?perPage=${PERPAGE}&page=${index + 1}`,
     fetcher,
+    {
+      onSuccess(data) {
+        if (data?.length === 1) {
+          setTimeout(() => {
+            scrollRef.current?.scrollToBottom();
+          }, 100);
+        }
+      },
+    },
   );
   const scrollRef = useRef<Scrollbars>(null);
 
@@ -71,6 +80,10 @@ const DirectMessage = () => {
       scrollRef.current?.scrollToBottom();
     }
   }, [chatData]);
+
+  useEffect(() => {
+    setSize(1);
+  }, [workspace, id]);
 
   const onSubmitForm = useCallback(
     (e) => {

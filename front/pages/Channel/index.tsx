@@ -67,21 +67,6 @@ const Channel = () => {
     },
     [channel, myData],
   );
-  useEffect(() => {
-    socket?.on('message', onMessage);
-    return () => {
-      socket?.off('message', onMessage);
-    };
-  }, [socket, onMessage]);
-
-  let isEmpty = chatData?.[0]?.length === 0;
-  let isReachingEnd = isEmpty || (chatData && chatData[chatData.length - 1]?.length < PERPAGE) || false;
-
-  useEffect(() => {
-    if (chatData?.length === 1) {
-      scrollRef.current?.scrollToBottom();
-    }
-  }, [chatData]);
 
   const onClickInviteChannel = useCallback(() => {
     setShowInviteChannelModal(true);
@@ -125,6 +110,26 @@ const Channel = () => {
     },
     [chat, workspace, channel, myData, chatData, channelData],
   );
+
+  useEffect(() => {
+    socket?.on('message', onMessage);
+    return () => {
+      socket?.off('message', onMessage);
+    };
+  }, [socket, onMessage]);
+
+  let isEmpty = chatData?.[0]?.length === 0;
+  let isReachingEnd = isEmpty || (chatData && chatData[chatData.length - 1]?.length < PERPAGE) || false;
+
+  useEffect(() => {
+    if (chatData?.length === 1) {
+      scrollRef.current?.scrollToBottom();
+    }
+  }, [chatData]);
+
+  useEffect(() => {
+    setSize(1);
+  }, [workspace, channel]);
 
   if (!myData || !chatData) {
     return null;
