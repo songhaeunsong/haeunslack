@@ -1,23 +1,45 @@
-import { IDM } from '@typings/db';
-import React, { FC, useCallback, useRef } from 'react';
-import { ChatZone } from './styles';
+import { IChat, IDM } from '@typings/db';
+import React, { FC, MutableRefObject, forwardRef, useCallback, useRef } from 'react';
+import { ChatZone, Section, StickyHeader } from './styles';
 import Chat from '@components/Chat';
 import { Scrollbars } from 'react-custom-scrollbars';
-import dayjs from 'dayjs';
+
 interface TProps {
-  chatData: IDM[];
+  chatSections: { [key: string]: (IDM | IChat)[] };
+  setSize: (f: (size: number) => number) => Promise<(IDM | IChat)[][] | undefined>;
+  isReachingEnd: boolean;
 }
-const ChatList: FC<TProps> = ({ chatData }) => {
-  const scrollRef = useRef(null);
-  const onScroll = useCallback(() => {}, []);
+const ChatList = forwardRef<Scrollbars, TProps>(({ chatSections, setSize, isReachingEnd }, scrollRef) => {
+  const onScroll = useCallback(
+    (values) => {
+      if (values.scrollTop === 0 && !isReachingEnd) {
+        setSize((prevSize) => prevSize + 1).then(() => {
+          setTimeout(() => {
+            const current = (scrollRef as MutableRefObject<Scrollbars>).current;
+            current?.scrollTop(current.getScrollHeight() - values.scrollHeight);
+          }, 50);
+        });
+      }
+    },
+    [scrollRef, isReachingEnd, setSize],
+  );
   return (
     <ChatZone>
       <Scrollbars autoHide ref={scrollRef} onScrollFrame={onScroll}>
-        {chatData.map((chat) => (
-          <Chat key={chat.id} data={chat} />
-        ))}
+        {Object.entries(chatSections).map(([date, chats]) => {
+          return (
+            <Section key={date} className={`section-${date}`}>
+              <StickyHeader>
+                <button>{date}</button>
+              </StickyHeader>
+              {chats.map((chat) => (
+                <Chat key={chat.id} data={chat} />
+              ))}
+            </Section>
+          );
+        })}
       </Scrollbars>
     </ChatZone>
   );
-};
+});
 export default ChatList;
