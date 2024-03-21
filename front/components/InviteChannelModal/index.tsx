@@ -24,6 +24,7 @@ const InviteChannelModal: VFC<TProps> = ({ show, setShowInviteChannelModal, onCl
     userData && channel ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
     fetcher,
   );
+
   const onInviteMember = useCallback(
     (e) => {
       e.preventDefault();
@@ -31,12 +32,12 @@ const InviteChannelModal: VFC<TProps> = ({ show, setShowInviteChannelModal, onCl
 
       axios
         .post(
-          `http://localhost:3095/api/workspaces/${workspace}/members`,
+          `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members`,
           { email: newMember },
           { withCredentials: true },
         )
-        .then((res) => {
-          mutateMember(res.data, false);
+        .then(() => {
+          mutateMember();
           setShowInviteChannelModal(false);
           setNewMember('');
         })
