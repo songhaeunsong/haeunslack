@@ -1,4 +1,4 @@
-import React, { CSSProperties, FC, useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 import { CloseModalButton, CreateModal } from './styles';
 
 interface TProps {

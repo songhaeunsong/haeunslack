@@ -1,4 +1,4 @@
-import React, { CSSProperties, VFC, useCallback, useState } from 'react';
+import React, { VFC, useCallback } from 'react';
 import { useParams } from 'react-router';
 import { toast } from 'react-toastify';
 import Modal from '@components/Modal';

@@ -1,4 +1,4 @@
-import React, { FC, VFC, useCallback, useEffect, useState } from 'react';
+import React, { VFC, useCallback, useEffect, useState } from 'react';
 import loadable from '@loadable/component';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
