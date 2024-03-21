@@ -24,15 +24,13 @@ const Channel = () => {
   const [socket] = useSocket(workspace);
 
   const { data: myData } = useSWR(`http://localhost:3095/api/users`, fetcher);
-  const { data: channelMembersData } = useSWR(
-    myData ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
-    fetcher,
-    {
-      dedupingInterval: 2000,
-    },
-  );
+
   const { data: channelData } = useSWR<IChannel>(
     `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}`,
+    fetcher,
+  );
+  const { data: channelMembersData } = useSWR(
+    myData ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
     fetcher,
   );
 
@@ -69,7 +67,6 @@ const Channel = () => {
     },
     [channel, myData],
   );
-
   useEffect(() => {
     socket?.on('message', onMessage);
     return () => {
@@ -100,7 +97,7 @@ const Channel = () => {
         const savedChat = chat;
         mutateChat((prevChatData) => {
           prevChatData?.[0].unshift({
-            id: (chatData[0][0].id || 0) + 1,
+            id: (chatData[0][0]?.id || 0) + 1,
             UserId: myData.id,
             User: myData,
             content: savedChat,
@@ -126,7 +123,7 @@ const Channel = () => {
           .catch((err) => console.dir(err));
       }
     },
-    [chat, workspace, channel],
+    [chat, workspace, channel, myData, chatData, channelData],
   );
 
   if (!myData || !chatData) {
